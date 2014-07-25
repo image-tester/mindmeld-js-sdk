@@ -934,63 +934,57 @@ var MMVoice = {
     getDocuments : function() {
         UTIL.log('getting documents');
         var self = this;
+        var textEntryQuery = { limit: self.config.numResults || 14 };
+        var filteredCategoryQuery = { limit: self.config.numResults || 14 };
 
-        var queryParams = { limit: self.config.numResults || 14 };
         if (self.config.highlight !== undefined) {
-            queryParams['highlight'] = JSON.stringify(self.config.highlight);
+            textEntryQuery['highlight'] = JSON.stringify(self.config.highlight);
+            filteredCategoryQuery['highlight'] = JSON.stringify(self.config.highlight);
         }
-        var requestKey = 'default';
 
-        var textEntries = self._currentTextEntries.map(
-            function getTextFromTextEntry (textEntry) {
-                return textEntry.text;
-            }
-        );
-        // unused
+        // construct query based on text entry IDs
         var textEntryIDs = self._currentTextEntries.map(
             function getIDFromTextEntry (textEntry) {
                 return textEntry.id;
             }
         );
-        var filteredQuery = self.constructFilteredQuery(textEntries, self.categories);
-        queryParams.query = filteredQuery;
-        console.log('filtered query: ' + filteredQuery);
+        textEntryQuery.textentryids = JSON.stringify(textEntryIDs);
+        var textEntryQueryDocuments = null;
 
-
-//      Disable caching for simplicity
-//        var selectedEntityIDs = Object.keys(MMVoice.selectedEntityMap);
-//        if (selectedEntityIDs.length > 0) {
-//            requestKey = JSON.stringify(selectedEntityIDs);
-//            queryParams.entityids = requestKey;
-//        } else {
-//            queryParams.textentryids = JSON.stringify(textEntryIDs);
-//        }
-//
-//        // Return cached response if it exists and has not expired (expire time of 10 minutes)
-//        if (self._documentsCache.hasOwnProperty(requestKey) &&
-//            Date.now() - self._documentsCache[requestKey].requestTime < 600000) {
-//            onSuccess(self._documentsCache[requestKey].result, true);
-//            return;
-//        }
-
-        if (!self._documentLock.canRequestDocuments()) {
-            return;
-        }
-
-        var requestTime = this._documentLock.lastDocumentsRequest = Date.now();
-        function onSuccess(result, cached) {
-            cached = !!cached;
-
-            if (!cached) {
-                self._documentsCache[requestKey] = {
-                    result: result,
-                    requestTime: requestTime
-                };
-                UTIL.log("Got documents");
-            } else {
-                UTIL.log("Got documents from cache");
+        // construct query based on categories
+        var textEntries = self._currentTextEntries.map(
+            function getTextFromTextEntry (textEntry) {
+                return textEntry.text;
             }
-            var documents = result.data;
+        );
+        var filteredQuery = self.constructFilteredQuery(textEntries, self.categories);
+        filteredCategoryQuery.query = filteredQuery;
+        console.log('filtered query: ' + filteredQuery);
+        var filteredQueryDocuments = null;
+
+
+        // make both queries!
+        MM.activeSession.documents.get(textEntryQuery,
+            function onGetTextEntryQueryDocuments (result) {
+                textEntryQueryDocuments = result.data;
+                console.log('text entry query documents: ' + textEntryQueryDocuments.length);
+                if (filteredQueryDocuments !== null) {
+                    onSuccess();
+                }
+            }
+            , onError);
+        MM.activeSession.documents.get(filteredCategoryQuery,
+            function onGetFilteredQueryDocuments (result) {
+                filteredQueryDocuments = result.data;
+                console.log('filtered query documents: ' + filteredQueryDocuments.length);
+                if (textEntryQueryDocuments !== null) {
+                    onSuccess();
+                }
+            }
+            , onError);
+
+        function onSuccess() {
+            var documents = filteredQueryDocuments.concat(textEntryQueryDocuments);
             var numDocuments = self._numDocumentsToRender(documents.length);
             documents.splice(numDocuments);
             MMVoice.showResults(documents);
@@ -1000,7 +994,6 @@ var MMVoice = {
             UTIL.log("Error getting documents:  (Type " + error.code +
                 " - " + error.type + "): " + error.message);
         }
-        MM.activeSession.documents.get(queryParams, onSuccess, onError);
     },
 
     constructFilteredQuery : function (textEntries, categoryDict) {
