@@ -1009,6 +1009,11 @@ var MMVoice = {
         textEntries.forEach(
             function findCategoriesFromTextEntry (textEntry) {
                 var words = textEntry.trim().split(' ');
+                words = words.map(
+                    function toLowerCase (word) {
+                        return word.toLowerCase();
+                    }
+                );
 
                 var i; // iterator index
                 var matchedCategories;
