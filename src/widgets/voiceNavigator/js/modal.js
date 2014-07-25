@@ -176,6 +176,9 @@ var MMVoice = {
                     });
                 }
             }
+            if (action === 'yelpCategories') {
+                self.categories = event.data.data;
+            }
         });
 
         // Close the modal
@@ -440,7 +443,18 @@ var MMVoice = {
 
         var recording = self.confirmedRecording;
         if (recording.textEntryID) {
-            var deletedTextEntryIndex = self._currentTextEntries.indexOf(recording.textEntryID);
+            function findTextEntryIndex (textEntryID) {
+                var textEntryIndex = -1;
+                for (var i = 0; i < self._currentTextEntries.length; i++) {
+                    var currentTextEntry = self._currentTextEntries[i];
+                    if (currentTextEntry.id === textEntryID) {
+                        textEntryIndex = i;
+                        break;
+                    }
+                }
+                return textEntryIndex;
+            }
+            var deletedTextEntryIndex = findTextEntryIndex(recording.textEntryID);
             self._currentTextEntries.splice(deletedTextEntryIndex, 1);
             MM.activeSession.textentries.delete(recording.textEntryID);
         }
@@ -451,7 +465,7 @@ var MMVoice = {
             type: 'text',
             weight: 1.0
         }, function (response) {
-            self.onTextEntryPosted(response);
+            self.onTextEntryPosted(response, text);
         });
     },
 
@@ -543,9 +557,19 @@ var MMVoice = {
                 return; // ignore long entities
             }
 
-            if (self._currentTextEntries.indexOf(entity.textentryid) === -1) {
+            var entityInTextEntries = false;
+            for (var i = 0; i < self._currentTextEntries.length; i ++) {
+                var currentTextEntry = self._currentTextEntries[i];
+                if (entity.textentryid === currentTextEntry.id) {
+                    entityInTextEntries = true;
+                    break;
+                }
+            }
+
+            if (! entityInTextEntries) {
                 return; // ignore entities from past text entries
             }
+
 
             var textEntry = self._textEntryMap[entity.textentryid];
             if (typeof textEntry !== 'undefined') {
@@ -916,20 +940,38 @@ var MMVoice = {
             queryParams['highlight'] = JSON.stringify(self.config.highlight);
         }
         var requestKey = 'default';
-        var selectedEntityIDs = Object.keys(MMVoice.selectedEntityMap);
-        if (selectedEntityIDs.length > 0) {
-            requestKey = JSON.stringify(selectedEntityIDs);
-            queryParams.entityids = requestKey;
-        } else {
-            queryParams.textentryids = JSON.stringify(self._currentTextEntries);
-        }
 
-        // Return cached response if it exists and has not expired (expire time of 10 minutes)
-        if (self._documentsCache.hasOwnProperty(requestKey) &&
-            Date.now() - self._documentsCache[requestKey].requestTime < 600000) {
-            onSuccess(self._documentsCache[requestKey].result, true);
-            return;
-        }
+        var textEntries = self._currentTextEntries.map(
+            function getTextFromTextEntry (textEntry) {
+                return textEntry.text;
+            }
+        );
+        // unused
+        var textEntryIDs = self._currentTextEntries.map(
+            function getIDFromTextEntry (textEntry) {
+                return textEntry.id;
+            }
+        );
+        var filteredQuery = self.constructFilteredQuery(textEntries, self.categories);
+        queryParams.query = filteredQuery;
+        console.log('filtered query: ' + filteredQuery);
+
+
+//      Disable caching for simplicity
+//        var selectedEntityIDs = Object.keys(MMVoice.selectedEntityMap);
+//        if (selectedEntityIDs.length > 0) {
+//            requestKey = JSON.stringify(selectedEntityIDs);
+//            queryParams.entityids = requestKey;
+//        } else {
+//            queryParams.textentryids = JSON.stringify(textEntryIDs);
+//        }
+//
+//        // Return cached response if it exists and has not expired (expire time of 10 minutes)
+//        if (self._documentsCache.hasOwnProperty(requestKey) &&
+//            Date.now() - self._documentsCache[requestKey].requestTime < 600000) {
+//            onSuccess(self._documentsCache[requestKey].result, true);
+//            return;
+//        }
 
         if (!self._documentLock.canRequestDocuments()) {
             return;
@@ -959,6 +1001,70 @@ var MMVoice = {
                 " - " + error.type + "): " + error.message);
         }
         MM.activeSession.documents.get(queryParams, onSuccess, onError);
+    },
+
+    constructFilteredQuery : function (textEntries, categoryDict) {
+        var categoryFilters = {}; // {'restaurant' => true}
+
+        textEntries.forEach(
+            function findCategoriesFromTextEntry (textEntry) {
+                var words = textEntry.trim().split(' ');
+
+                var i; // iterator index
+                var matchedCategories;
+                // find 2-grams
+                if (words.length > 1) {
+                    for (i = 0; i < words.length - 1; i++) {
+                        var twoGram = words[i] + ' ' + words[i + 1];
+                        matchedCategories = categoryDict[twoGram];
+                        if (matchedCategories !== undefined) {
+                            // add matched categories
+                            matchedCategories.forEach(
+                                function addCategory (category) {
+                                    categoryFilters[category] = true;
+                                }
+                            );
+                        }
+                    }
+                }
+
+                // find 1-grams
+                if (words.length > 0) {
+                    for (i = 0; i < words.length; i++) {
+                        var oneGram = words[i];
+                        matchedCategories = categoryDict[oneGram];
+                        if (matchedCategories !== undefined) {
+                            // add matched categories
+                            matchedCategories.forEach(
+                                function addCategory (category) {
+                                    categoryFilters[category] = true;
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        );
+
+        var categoryList = Object.keys(categoryFilters);
+        var categoryString = '';
+        categoryList.forEach(
+            function addCategory (category) {
+                categoryString += '\"' + category + '\" ';
+            }
+        );
+        categoryString = categoryString.trim();
+
+        var textEntryString = '';
+        textEntries.forEach(
+            function addTextEntry (textEntry) {
+                textEntryString += textEntry + ' ';
+            }
+        );
+        textEntryString = textEntryString.trim();
+
+        var query = 'categories:(' + categoryString + ') AND (' + textEntryString + ')';
+        return query;
     },
 
     resize : function(e) {
@@ -991,12 +1097,15 @@ var MMVoice = {
         this.$input.attr('data-text', fullText);
     },
 
-    onTextEntryPosted: function(response) {
+    onTextEntryPosted: function(response, text) {
         var self = MMVoice;
         UTIL.log('text entry posted');
         var textEntryID = MMVoice.confirmedRecording.textEntryID = response.data.textentryid;
         self.$input.data('textentryid', textEntryID);
-        self._currentTextEntries.push(textEntryID);
+        self._currentTextEntries.push({
+            id: textEntryID,
+            text: text
+        });
         delete self._documentsCache['default'];
         self.selectedEntityMap = {};
         MMVoice.getDocuments();
@@ -1079,8 +1188,8 @@ var MMVoice = {
             }
 
         },
-        onTextEntryPosted: function(response) {
-            MMVoice.onTextEntryPosted(response);
+        onTextEntryPosted: function(response, text) {
+            MMVoice.onTextEntryPosted(response, text);
         }
     },
 

@@ -508,6 +508,7 @@ MM.voiceNavigator.showModal = function(options) {
             $mm_iframe = UTIL.el(iframe);
 
             UTIL.el(iframe).on('load', function() {
+                postMessage('yelpCategories', CATEGORY_LOOKUP);
                 postMessage('config', MM.voiceNavigator.config);
                 postMessage('open');
             });

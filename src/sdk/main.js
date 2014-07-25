@@ -3487,7 +3487,7 @@ var MM = ( function (window, $, Faye) {
                     textEntryData.language = MM.Listener.convertLanguageToISO6392(lang);
                 }
                 session.textentries.post(textEntryData, function(response) {
-                    MM.Util.testAndCallThis(session._onTextEntryPosted, session.listener, response);
+                    MM.Util.testAndCallThis(session._onTextEntryPosted, session.listener, response, transcript);
                 });
             }
             $.extend(this, MM.Internal.customEventHandlers); // adds support for custom events on session channel
