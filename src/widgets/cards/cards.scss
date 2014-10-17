@@ -1,0 +1,160 @@
+$white: #fff;
+$faint-grey: #f9f9f9;
+$light-grey: #888;
+$grey: #636363;
+$dark-grey: #333;
+
+$card-width: 218px;
+$card-margin: 10px;
+$card-text-size: 11px;
+$card-title-size: 15px;
+
+
+
+@mixin box-shadow($top, $left, $blur, $color, $inset:"") {
+  -webkit-box-shadow:$top $left $blur $color #{$inset};
+  -moz-box-shadow:$top $left $blur $color #{$inset};
+  box-shadow:$top $left $blur $color #{$inset};
+}
+
+$narrow-device: "only screen and (max-device-width : 600px)";
+$narrow-window: "only screen and (max-width : 600px)";
+
+body {
+  background-color: $faint-grey;
+}
+
+.clear-fix {
+  clear: both;
+}
+
+#cards {
+  &, & * {
+    box-sizing: border-box;
+  }
+
+  position: relative;
+
+  background-color: $faint-grey;
+  padding: 10px;
+  margin: 0 auto;
+
+  font-family: arial, helvetica, sans-serif;
+
+  @media #{$narrow-device} {
+    margin: auto;
+  }
+
+  @for $i from 1 through 8 {
+    $el-width: ($card-width + 2*$card-margin) * $i + 20px;
+    // ((card width + 20 padding) * i) + outer padding + border
+    $el-media: "all and (min-width: " + $el-width + ")";
+    @media #{$el-media} {
+      width: $el-width;
+    }
+  }
+
+  &.loading {
+    opacity: 0.3;
+  }
+
+  .card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: $card-width;
+
+    //border: 1px solid #BBB;
+    margin: $card-margin;
+    padding: 15px 0 5px;
+    background-color: $white;
+    display: block;
+
+    text-decoration: none;
+    color: $light-grey;
+
+    border-radius: 7px;
+    //@include box-shadow(0, 0, 6px, rgba(0,0,0,0.3));
+    @include box-shadow(0, 0, 6px, $grey);
+
+    &:hover {
+      border: 1px solid #999;
+      /* make this wider so that we don't shrink the content */
+      width: $card-width + 2px;
+      text-decoration: none;
+      color: $grey;
+      //@include box-shadow(0, 0, 8px, rgba(0,0,0,0.6));
+      @include box-shadow(0, 0, 8px, $dark-grey);
+
+      .title {
+        color: $dark-grey;
+      }
+    }
+
+    &:active {
+      border: 2px solid #999;
+      /* make this wider so that we don't shrink the content */
+      width: $card-width + 4px;
+    }
+
+    .title {
+      color: $grey;
+      margin: 0 15px;
+      font-size: $card-title-size;
+      font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    p {
+      font-size: $card-text-size;
+      line-height: 1.5em;
+      margin: 10px 15px;
+
+      &.image {
+        width: 100%;
+        text-align: center;
+        margin: 5px 0;
+        line-height: initial;
+
+        &.not-loaded {
+          height: 311px; /* Approximate size of future images */
+          overflow: hidden;
+          background: $white url('images/spinner.gif')  no-repeat center;
+          img {
+            opacity: 0;
+          }
+        }
+
+        img {
+          width: 100%;
+        }
+      }
+    }
+
+
+    .row {
+
+      p {
+        margin: 2px 0;
+        display: block;
+
+        &.align-left {
+          float: left;
+          text-align: left;
+          margin-left: 15px;
+        }
+        &.align-right {
+          float: right;
+          text-align: right;
+          margin-right: 15px;
+        }
+        &.placeholder {
+          font-size: $card-text-size;
+          font-style: italic;
+          color: #aaa;
+        }
+      }
+
+    }
+  }
+
+}

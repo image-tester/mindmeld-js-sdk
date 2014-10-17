@@ -45,7 +45,7 @@ tempDir="/var/tmp/${REPO}_${BUILD_ID}"
 tarFile="${REPO}_${BUILD_ID}.tgz"
 tarSha="${REPO}_${BUILD_ID}.sha1"
 mkdir -p $tempDir
-$SCRIPT_DIR/git-archive-all --prefix=$PREFIX --extra='dist/docs/'  --extra='dist/test/' "$tempDir/$tarFile"
+$SCRIPT_DIR/git-archive-all --prefix=$PREFIX --extra='dist/' "$tempDir/$tarFile"
 echo $GIT_COMMIT > "$tempDir/$tarSha"
 $S3CMD put "$tempDir/$tarFile" "s3://elabs-pkg/releases/$tarFile"
 $S3CMD put "$tempDir/$tarSha" "s3://elabs-pkg/releases/$tarSha"

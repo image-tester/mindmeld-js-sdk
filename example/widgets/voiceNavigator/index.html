@@ -141,14 +141,13 @@
                 fayeClientUrl: 'https://push-' + DEMO_ENVIRONMENT + '.expectlabs.com:443/faye',
                 voice: {
                     development: true
+                ,   listeningMode: 'continuous'
                 ,   cardLinkBehavior: '_blank'
                 ,   cardTemplate: window['vn-card-template'].innerHTML
                 ,   customCSSURL: './css/movieGenius.css'
 //                ,   customCSS: window['vn-custom-css'].innerHTML
-                ,   lang: 'pt-BR'
                 }
             };
-
             var script = document.createElement('script');
             script.type = 'text/javascript';
             script.async = true;

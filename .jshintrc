@@ -1,4 +1,5 @@
 {
+    "browser": true,
     "devel": true,
     "bitwise": true,
     "camelcase": true,
@@ -6,7 +7,7 @@
     "eqeqeq": true,
     "indent": 2,
     "immed": true,
-    "latedef": true,
+    "latedef": "nofunc",
     "newcap": true,
     "noarg": true,
     "quotmark": "single",

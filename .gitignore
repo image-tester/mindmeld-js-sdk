@@ -1,14 +1,11 @@
-# JSDoc generated documentation
-dist/docs
-
 # Node packages
 node_modules/
 
 # Client-side packages
 bower_components/
 
-# Test files
-dist/test/
+# Distribution files
+dist/
 
 # OS X garbage
 .DS_STORE
@@ -17,6 +14,9 @@ dist/test/
 mindmeld-js-sdk.iml
 .idea/
 
+# Config file for git-sync
+sftp-config.json
+
 # Development sandbox
 sandbox/
 
@@ -24,3 +24,4 @@ sandbox/
 .sass-cache/
 searchWidget/.sass-cache
 searchWidget/css/*.map
+

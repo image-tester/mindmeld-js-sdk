@@ -1,0 +1,27 @@
+<a id="{{ documentid }}" class="card" href="{{ originurl }}" target="_blank"
+  data-document-id="{{ documentid }}">
+    <h2 class="title">{{ title }}</h2>
+
+    {{#if imageUrl }}
+      <p class="image not-loaded">
+        <img src="{{ imageUrl }}" target="_blank">
+      </p>
+    {{/if }}
+
+    <p class="description">{{ description }}</p>
+
+    <div class="row">
+
+      {{#if price }}
+        <p class="align-left price">${{ price }}</p>
+      {{else }}
+        <p class="align-left price placeholder"></p>
+      {{/if }}
+
+      {{#if category }}
+        <p class="align-right">{{ category }}</p>
+      {{/if }}
+
+      <p class="clear-fix"></p>
+    </div>
+</a>

@@ -1,3 +1,4 @@
+/* jshint node: true, browser: false */
 /* bundleLogger
    ------------
    Provides gulp style logs to the bundle method in browserify.js

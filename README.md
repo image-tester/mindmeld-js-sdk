@@ -28,12 +28,12 @@ take a hit. However, if you must link directly, you should use the versioned URL
 to prevent compatibility issues in the future.
 
 ```html
-<script type="text/javascript" src="https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-2.5.6.js"></script>
+<script type="text/javascript" src="https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-2.8.1.js"></script>
 ```
 
-* Un-minified: [mindmeld-2.5.6.js][versionedSDKDownloadLink]
-* Minified: [mindmeld-2.5.6.min.js][versionedMinifiedSDKDownloadLink]
-* Both + Hello World + Documentation: [mindmeld-js-sdk-2.5.6.zip][versionedSDKZIPDownloadLink]
+* Un-minified: [mindmeld-2.8.1.js][versionedSDKDownloadLink]
+* Minified: [mindmeld-2.8.1.min.js][versionedMinifiedSDKDownloadLink]
+* Both + Hello World + Documentation: [mindmeld-js-sdk-2.8.1.zip][versionedSDKZIPDownloadLink]
 
 ### Clone git repository
 Both files are also available directly from the mindmeld-js-sdk git repository. Simply clone the repo:
@@ -74,6 +74,51 @@ supported by the MindMeld API. The JavaScript SDK wraps the objects and collecti
 RESTful API with convenient JavaScript objects. These objects can then be used to communicate with the MindMeld
 API. The JavaScript SDK also provides the ability to send and receive real-time push events in most modern browsers.
 
+### Quick Start
+
+The SDK contains a convenience wrapper method `MM.start` to get you up and
+running in no time.  To start a session, create an anonymous user, and create
+and use a new session:
+
+```javascript
+MM.start( { appid: "<your application id>" } );
+```
+
+You can supply optional `onSuccess` and `onFail` callbacks:
+
+```javascript
+MM.start( { appid: "<your application id>" }, function onSuccess () {
+  console.log('MindMeld started with active user id', MM.activeUserID,
+    'and session id', MM.activeSessionID);
+}, function onFail (error) {
+  console.error('MindMeld failed to start:', error);
+});
+```
+
+If you want to choose a particular user or session info, you can:
+```javascript
+MM.start({
+  appid: "<your application id>",
+  credentials: {
+    simple: {
+      userid: "einstein79",
+      name: "Albert Einstein"
+    }
+  },
+  session: {
+    name: "The relative session",
+    privacymode: "inviteonly"
+  }
+}, function onSuccess () {
+  console.log('MindMeld started with active user id', MM.activeUserID,
+    'and session id', MM.activeSessionID);
+}, function onFail (error) {
+  console.error('MindMeld failed to start:', error);
+});
+```
+
+If you wish to manually control the steps, use the Initialization, Token, and
+Session sections below.
 
 ### Initialization
 
@@ -113,7 +158,7 @@ MM.getToken(credentials, onTokenSuccess, onTokenError);
 
 function onTokenSuccess () {
     console.log('Your access token was successfully retrieved: ' + MM.token + '.');
-    console.log('The active user id has been set to: ' + MM.activeUserId);
+    console.log('The active user id has been set to: ' + MM.activeUserID);
 }
 
 function onTokenError (error) {
@@ -332,6 +377,30 @@ if (MM.support.speechRecognition) { // check for support in the current browser
 }
 ```
 
+## Widgets and Examples
+We've made some widgets that leverage the SDK to perform some common tasks.
+You'll find them in `src/widgets/`; three that serve as good components are:
+
+* MindMeldMicrophone: In `src/widgets/microphone/`, there are html, scss, and
+  js files that wrap the Listener into a responsive UI component.
+* MindMeldSearchInput: In `src/widgets/searchInput/`, there are html, scss, and
+  js files for a search input that works well with the microphone.
+* MindMeldCards: In `src/widgets/cards/`, there are html, scss, and
+  js files for a customizeable, animated, and responsive component to display
+  cards for the documents returned by the SDK.
+
+In the `example/` directory, we have several code examples for how to use the
+SDK and the widgets.  In `example/widgets/`, we have made several examples on
+how to use the widgets individually.
+
+To see an example fully-functional MindMeld app, look inside of
+`example/voiceApp/`.  This application ties the microphone, search input, and cards
+widgets together in a standalone app.  With this application,
+you'll see how to build natural-language voice search into your application
+with very few lines of code.  We've explained the structure of the app, and how
+to run and modify it, in the
+[developer center](https://developer.expectlabs.com/docs/sdks/js/starterApp).
+
 ## Repository Contents ([mindmeld-js-sdk](https://github.com/expectlabs/mindmeld-js-sdk))
 * *src/*: Directory containing all source files for SDK and widgets
 * *src/sdk/*: Directory containing source files for mindmeld.js
@@ -365,6 +434,6 @@ if (MM.support.speechRecognition) { // check for support in the current browser
 [latestSDKDownloadLink]:https://developer.expectlabs.com/public/sdks/js/mindmeld.js
 [latestMinifiedSDKDownloadLink]:https://developer.expectlabs.com/public/sdks/js/mindmeld.min.js
 [latestSDKZIPDownloadLink]:https://developer.expectlabs.com/public/sdks/js/mindmeld-js-sdk.zip
-[versionedSDKDownloadLink]:https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-2.5.6.js
-[versionedMinifiedSDKDownloadLink]:https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-2.5.6.min.js
-[versionedSDKZIPDownloadLink]:https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-js-sdk-2.5.6.zip
+[versionedSDKDownloadLink]:https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-2.8.1.js
+[versionedMinifiedSDKDownloadLink]:https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-2.8.1.min.js
+[versionedSDKZIPDownloadLink]:https://developer.expectlabs.com/public/sdks/js/archive/mindmeld-js-sdk-2.8.1.zip

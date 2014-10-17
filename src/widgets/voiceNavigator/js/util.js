@@ -57,13 +57,24 @@ exports.timestamp = function (date) {
     date = date || new Date();
     return addLeadingZeros(date.getFullYear(), 4) + '.'
         + addLeadingZeros(date.getMonth() + 1, 2) + '.'
-        + addLeadingZeros(date.getDate(), 2) + ' ' + date.toTimeString();
+        + addLeadingZeros(date.getDate(), 2) + ' '
+        + addLeadingZeros(date.getHours(), 2) + ':'
+        + addLeadingZeros(date.getMinutes(), 2) + ':'
+        + addLeadingZeros(date.getSeconds(), 2) + '.'
+        + addLeadingZeros(date.getMilliseconds(), 3)
+        + date.toTimeString().substring(8);
 };
 
 exports.log = function() {
     var args = Array.prototype.slice.call(arguments, 0);
     args.splice(0, 0, exports.timestamp());
     console.log.apply(console, args);
+};
+
+exports.debug = function() {
+    var args = Array.prototype.slice.call(arguments, 0);
+    args.splice(0, 0, exports.timestamp());
+    console.debug.apply(console, args);
 };
 
 exports.contentLoaded = contentLoaded;

@@ -1,4 +1,4 @@
-/* jshint node: true */
+/* jshint node: true, browser: false */
 
 var gulp = require('gulp');
 var shell = require('gulp-shell');
@@ -67,4 +67,3 @@ gulp.task('tests.integration', ['tests.build'], function () {
 
 gulp.task('tests', ['tests.unit', 'tests.integration']);
 gulp.task('tests.tasks', taskListing.withFilters(/\./, /^(?!tests).+/));
-

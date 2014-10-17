@@ -1,0 +1,15 @@
+{
+  "name": "MMAuth",
+  "version": "0.0.0",
+  "description": "A simple Node JS server implementing simple authentication",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "jj",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.36.0",
+    "restify": "^2.8.1"
+  }
+}

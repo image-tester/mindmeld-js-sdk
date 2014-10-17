@@ -1,3 +1,5 @@
+/* jshint node: true, browser: false */
+
 var notify = require("gulp-notify");
 
 module.exports = function() {

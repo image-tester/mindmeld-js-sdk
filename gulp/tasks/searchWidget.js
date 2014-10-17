@@ -1,3 +1,5 @@
+/* jshint node: true, browser: false */
+
 var gulp = require('gulp');
 var concat = require('gulp-concat-util');
 var uglify = require('gulp-uglify');

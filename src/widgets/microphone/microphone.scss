@@ -1,0 +1,202 @@
+// BEGIN Mixins
+
+@mixin animation($animations...) {
+  -webkit-animation: $animations;
+  -moz-animation: $animations;
+  animation: $animations;
+}
+
+@mixin animation-delay($duration) {
+  -webkit-animation-delay: $duration;
+  -moz-animation-delay: $duration;
+  animation-delay: $duration;
+}
+
+@mixin animation-name($name) {
+  -webkit-animation-name: $name; /* Chrome, Safari, Opera */
+  animation-name: $name;
+}
+
+@mixin transition($args...) {
+  -webkit-transition: $args;
+  -moz-transition: $args;
+  -ms-transition: $args;
+  -o-transition: $args;
+  transition: $args;
+}
+
+@mixin keyframes($animation-name) {
+  @-webkit-keyframes $animation-name {
+    @content;
+  }
+  @-moz-keyframes $animation-name {
+    @content;
+  }
+  @-ms-keyframes $animation-name {
+    @content;
+  }
+  @-o-keyframes $animation-name {
+    @content;
+  }
+  @keyframes $animation-name {
+    @content;
+  }
+}
+
+// END Mixins
+
+/******************
+ * Microphone CSS *
+ ******************/
+
+$dark-grey: #333;
+$mic-size: 62px; // Should be the same as the searchInput $query-inner-height
+$mic-icon-size: 32px; // Should be the same as the searchInput $icon-size.
+$mic-border-width: 2px;
+$mic-color: #2fbbfb;
+$disabled-mic-color: #aaa;
+
+@include keyframes(mic-listening-pulse) {
+  0% {
+    background-color: $mic-color;
+  }
+  50% {
+    background-color: darken($mic-color, 20%);
+  }
+  100% {
+    background-color: $mic-color;
+  }
+}
+
+@include keyframes(bubbles) {
+  0% {
+    background-position: 0 0, 30px -150px;
+  }
+  50% {
+    background-position: 0 -150px, 30px 0;
+  }
+  100% {
+    background-position: 0 0, 30px -150px;
+  }
+}
+
+.mindmeld-microphone {
+  &, & * {
+    box-sizing: border-box;
+  }
+
+  position: absolute;
+  top: 0px;
+  right: 0px;
+
+  height: $mic-size;
+  width: $mic-size;
+  margin: $mic-border-width;
+
+  .icon-container {
+    border-radius: $mic-size;
+    background-color: $mic-color;
+    width: $mic-size;
+    height: $mic-size;
+    @include transition(background-color 0.5s ease-in-out, box-shadow 0.3s ease-out);
+    //box-shadow: 0 0 0 1px rgba(0,0,0,0.3) inset;
+
+    .icon {
+      width: $mic-icon-size;
+      height: $mic-icon-size;
+      fill: white;
+      display: block;
+      margin: 0 auto;
+      position: relative;
+      @include transition(opacity 0.3s ease-out);
+    }
+
+    .mic-icon {
+      opacity: 1;
+      top: 25%; //TODO: This calculates 15px, which is one pixel to high.  14px?
+    }
+
+    .mute-icon {
+      opacity: 0;
+      top: -28%;
+    }
+
+    .lock-icon {
+      opacity: 0;
+      top: -85%;
+    }
+
+    &:hover {
+      cursor: pointer;
+      background-color: darken($mic-color, 20%);
+    }
+  }
+
+  &.listening {
+    .icon-container {
+      box-shadow: 0 0 0 8px $dark-grey inset;
+      @include animation('mic-listening-pulse 1.5s infinite');
+
+    }
+
+    .bubbles {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      border-radius: 100px;
+      width: 60px;
+      height: 60px;
+
+      @include animation(bubbles 7.5s linear infinite);
+      background-image: url('images/mic_bg.png'), url('images/mic_bg.png');
+      background-position: 0 0, 30px -150px;
+      -webkit-background-size: 100px auto;
+      -moz-background-size: 100px auto;
+      background-size: 100px auto;
+    }
+
+  }
+
+  &.listening.lock {
+    .icon-container {
+      .mic-icon {
+        opacity: 0;
+      }
+
+      .lock-icon {
+        opacity: 1;
+      }
+    }
+  }
+
+  &.disabled {
+    .icon-container {
+      background-color: $disabled-mic-color;
+
+      .mic-icon {
+        opacity: 0;
+      }
+
+      .mute-icon {
+        opacity: 1;
+      }
+
+      &:hover {
+        cursor: default;
+      }
+    }
+  }
+
+  .volume-pulser {
+    width: $mic-size;
+    height: $mic-size;
+    border-radius: $mic-size;
+    background-color: rgba(0, 0, 0, 0.4);
+    transform: scale(0.9);
+    position: relative;
+    bottom: $mic-size;
+    z-index: -1;
+    @include transition(0.15s ease-out);
+  }
+
+}

@@ -41,7 +41,7 @@ describe('API', function () {
   describe('callApi', function () {
 
     it('should call the API with GET', function (done) {
-      var sessionid = MM.activeSessionId;
+      var sessionid = MM.activeSessionID;
       MM.callApi('GET', 'session/' + sessionid + '/documents', null,
         function onSuccess(result) {
           expect(result).toBeSuccess();

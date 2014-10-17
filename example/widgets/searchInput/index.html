@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Mindmeld Search Input Example</title>
+    <link rel="stylesheet" href="../../../dist/widgets/searchInput/searchInput.css">
+</head>
+<body>
+    <h2>The MindMeld Search Input Example</h2>
+
+    <div class="mindmeld-search">
+
+      <div class="mindmeld-search-input">
+        <div class="mindmeld-search-text" contenteditable="true">
+          <span>What dresses do you have in red?</span>
+        </div>
+      </div>
+
+      <div class="mindmeld-search-glass">
+        <img class="magnifying-glass" src="../../../dist/widgets/searchInput/images/magnifying_glass.svg" />
+      </div>
+
+    </div>
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="../../../dist/widgets/searchInput/searchInput.js"></script>
+    <script>
+        'use strict';
+
+        document.addEventListener('DOMContentLoaded', function exampleMindmeldMicrophone () {
+
+            initSearchInput();
+
+            function initSearchInput () {
+                var searchElement = document.querySelector('.mindmeld-search');
+                subscribeToSearchInputEvents();
+                MindMeldSearchInput.initialize(searchElement);
+                MindMeldSearchInput.setText('hello', false);
+                setTimeout(
+                    function () {
+                        MindMeldSearchInput.setText('hello can you', false);
+                    },
+                    1000
+                );
+                setTimeout(
+                    function () {
+                        MindMeldSearchInput.setText('hello can you hear me', false);
+                    },
+                    2000
+                );
+                setTimeout(
+                    function () {
+                        MindMeldSearchInput.setText('hello can you hear me', true);
+                    },
+                    3000
+                );
+            }
+
+            function subscribeToSearchInputEvents () {
+                MindMeldSearchInput.on('init', function onInit () {
+                    console.log('init');
+                });
+
+                MindMeldSearchInput.on('submitText', function onSubmit (text) {
+                   console.log('submit text: ' + text);
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>

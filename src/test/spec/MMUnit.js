@@ -4,6 +4,16 @@
 describe('MM Unit', function () {
   var baseUrl = FakeBaseUrl;
 
+  var checkAndRespond = function (fakeAjax, fakeReq, fakeRes) {
+    expect(fakeAjax.url).toBe(fakeReq.url);
+    expect(fakeAjax.method).toBe(fakeReq.method);
+
+    fakeAjax.response({
+      status: 200,
+      contentType: 'text/html',
+      responseText: JSON.stringify(fakeRes)
+    });
+  };
 
   beforeEach(function() {
     jasmine.addMatchers(window.customMatchers);
@@ -34,40 +44,28 @@ describe('MM Unit', function () {
       MM.token = null;
     });
 
-    it ('should set a token and activeUserId on success', function (done) {
-
-      var fakeAjax = FakeResponses['getToken'];
+    it ('should set a token and activeUserID on success', function (done) {
+      var simpleData = { userid: '700', name: 'Jerry the cat'};
+      var fakeData = FakeResponses.getToken(simpleData);
       MM.getToken({
         appsecret: 'ABCD',
-        simple: {
-          userid: '11',
-          name: 'Jack'
-        }
+        simple: simpleData
       }, function onSuccess (response) {
         expect(response.token).toBeOk();
         expect(MM.token).toEqual(response.token);
-        expect(MM.activeUserId).toEqual(fakeAjax.req.data.credentials.simple.userid);
+        expect(MM.activeUserID).toEqual(simpleData.userid);
         done();
       }, function onError () {
-        // XXX: Can't find a jasmine.fail
-        expect(false).toBe(true);
+        fail('should not have error');
       });
 
       // Test the immediate properties here, outside of the async block.
-      var fakeReq = jasmine.Ajax.requests.mostRecent();
-      expect(fakeReq.url).toBe(fakeAjax.req.url);
-      expect(fakeReq.method).toBe(fakeAjax.req.method);
-
-      jasmine.Ajax.requests.mostRecent().response({
-        status: 200,
-        contentType: 'text/html',
-        responseText: JSON.stringify(fakeAjax.res)
-      });
+      checkAndRespond(jasmine.Ajax.requests.mostRecent(), fakeData.req, fakeData.res);
     });
 
     it ('should return appropriate error on failure', function (done) {
 
-      var fakeAjax = FakeResponses['getTokenError'];
+      var fakeData = FakeResponses.getTokenError();
       MM.getToken({
         appsecret: 'ABCD',
         simple: {
@@ -78,22 +76,62 @@ describe('MM Unit', function () {
         fail('getToken should not succeed');
       }, function onError (error) {
         expect(error).toBeOk();
-        expect(error.code).toEqual(fakeAjax.res.error.code);
+        expect(error.code).toEqual(fakeData.res.error.code);
         expect(MM.token).not.toBeOk();
         done();
       });
 
       // Test the immediate properties here, outside of the async block.
-      var fakeReq = jasmine.Ajax.requests.mostRecent();
-      expect(fakeReq.url).toBe(fakeAjax.req.url);
-      expect(fakeReq.method).toBe(fakeAjax.req.method);
+      checkAndRespond(jasmine.Ajax.requests.mostRecent(), fakeData.req, fakeData.res);
+    });
 
-      jasmine.Ajax.requests.mostRecent().response({
-        status: 200,
-        contentType: 'text/html',
-        responseText: JSON.stringify(fakeAjax.res)
+  });
+
+  describe('setToken', function () {
+
+    var appid;
+
+    beforeEach(function (done) {
+      appid = '123456';
+      // First, init MM
+      MM.init( {
+        cleanUrl: baseUrl,
+        appid: appid,
+        onInit: done
+      });
+    });
+
+    afterEach(function () {
+      MM.token = null;
+    });
+
+    it ('should set a token on success', function (done) {
+      var options = { appid: '123456', token: 'ABDE5431FF0' };
+      var fakeData = FakeResponses.getApp(options);
+      MM.setToken(options.token, function onSuccess () {
+        expect(MM.token).toEqual(options.token);
+        done();
+      }, function onError () {
+        fail('should not have error');
       });
 
+      // Test the immediate properties here, outside of the async block.
+      checkAndRespond(jasmine.Ajax.requests.mostRecent(), fakeData.req, fakeData.res);
+    });
+
+    it ('should return appropriate error on failure', function (done) {
+
+      var fakeData = FakeResponses.invalidToken();
+      var options = { appid: '123456', token: 'ABDE5431FF0' };
+      MM.setToken(options.token, function onSuccess () {
+        fail('setToken should not succeed');
+      }, function onError () {
+        expect(MM.token).toEqual(options.token);
+        done();
+      });
+
+      // Test the immediate properties here, outside of the async block.
+      checkAndRespond(jasmine.Ajax.requests.mostRecent(), fakeData.req, fakeData.res);
     });
 
   });
@@ -119,37 +157,28 @@ describe('MM Unit', function () {
       MM.token = null;
     });
 
-    it ('should set activeSessionId on success', function (done) {
-      var fakeAjax = FakeResponses['getSession'];
-      var sessionid = fakeAjax.sessionid;
+    it ('should set activeSessionID on success', function (done) {
+      var sessionid = '34521';
+      var fakeData = FakeResponses.getSession({sessionid: sessionid});
 
       MM.setActiveSessionID(sessionid,
         function onSessionStart () {
-          expect(MM.activeSessionId).toEqual(sessionid);
+          expect(MM.activeSessionID).toEqual(sessionid);
           done();
       }, function onError () {
         fail('Should not have error');
         done();
       });
 
-      var fakeReq = jasmine.Ajax.requests.mostRecent();
-      expect(fakeReq.url).toBe(baseUrl + 'session/' + sessionid);
-      expect(fakeReq.method).toBe('GET');
-
-      // jasmine.Ajax.requests.mostRecent().response({
-      fakeReq.response({
-        status: 200,
-        contentType: 'text/html',
-        responseText: JSON.stringify(fakeAjax.res)
-      });
+      checkAndRespond(jasmine.Ajax.requests.mostRecent(), fakeData.req, fakeData.res);
     });
 
   });
 
   describe('getApp', function () {
 
-    var fakeAppData = FakeResponses['getApp'];
-    var APP_ID = fakeAppData['appid'];
+    var APP_ID = 'ADF123512FFE';
+    var fakeData = FakeResponses.getApp({ appid: APP_ID});
 
     beforeEach(function beforeGetAppTests (done) {
       MM.init({
@@ -180,17 +209,150 @@ describe('MM Unit', function () {
         }
       );
 
-      var fakeGetAppRequest = jasmine.Ajax.requests.mostRecent();
-      expect(fakeGetAppRequest.url).toBe(baseUrl);
-      expect(fakeGetAppRequest.method).toBe('GET');
-
-      fakeGetAppRequest.response({
-        status: 200,
-        contentType: 'text/html',
-        responseText: JSON.stringify(fakeAppData['response'])
-      });
-
+      checkAndRespond(jasmine.Ajax.requests.mostRecent(), fakeData.req, fakeData.res);
     });
   });
 
+  describe('start', function () {
+    var stubAjax = function (data) {
+      jasmine.Ajax.stubRequest(data.req.url, null, data.req.method).andReturn({
+        contentType: 'text/html',
+        responseText: JSON.stringify(data.res)
+      });
+    };
+
+
+    it ('with only appid should set data', function (done) {
+      var options = {
+        userid: '1245',
+        sessionid: '83434231',
+        token: 'ABCDEF123404b8053d18b859c5f682c7406e'
+      };
+      var APP_ID = 'ASDFG';
+
+      var fakeTokenData = FakeResponses.getTokenAnon(options);
+      stubAjax(fakeTokenData);
+      var fakeUserData = FakeResponses.getUser(options);
+      stubAjax(fakeUserData);
+      var fakePostSessionData = FakeResponses.postSession(options);
+      stubAjax(fakePostSessionData);
+      var fakeGetSessionData = FakeResponses.getSession(options);
+      stubAjax(fakeGetSessionData);
+
+      MM.start({appid: APP_ID}, function onSuccess () {
+        expect(MM.token).toEqual(options.token);
+        expect(MM.activeUserID).toEqual(options.userid);
+        expect(MM.activeSessionID).toEqual(options.sessionid);
+        done();
+      }, function onFail (err) {
+        fail('Should not have an error', err);
+      });
+    });
+
+    it ('with simple credentials should set data', function (done) {
+      var options = {
+        userid: '12457',
+        name: 'aladdin',
+        sessionid: '83a34231',
+        token: 'ABCDEF12FFFF18b859c5f682c7406e'
+      };
+      var APP_ID = 'ASDFG';
+
+      var fakeTokenData = FakeResponses.getToken(options);
+      stubAjax(fakeTokenData);
+      var fakeUserData = FakeResponses.getUser(options);
+      stubAjax(fakeUserData);
+      var fakePostSessionData = FakeResponses.postSession(options);
+      stubAjax(fakePostSessionData);
+      var fakeGetSessionData = FakeResponses.getSession(options);
+      stubAjax(fakeGetSessionData);
+
+      MM.start({
+        appid: APP_ID,
+        credentials: {
+          appsecret: 'adsfadfdafs',
+          simple: {
+            userid: options.userid,
+            name: options.name
+          }
+        }
+      }, function onSuccess () {
+        expect(MM.token).toEqual(options.token);
+        expect(MM.activeUserID).toEqual(options.userid);
+        expect(MM.activeSessionID).toEqual(options.sessionid);
+        done();
+      }, function onFail (err) {
+        console.error('Got error', err);
+        fail('Should not have an error');
+      });
+    });
+
+    it ('with token and userid should set data', function (done) {
+      var options = {
+        appid: 'AD453472232',
+        userid: '12457',
+        name: 'aladdin',
+        sessionid: '83a34231',
+        token: 'ABCDEF12FFFF18b859c5f682c7406e'
+      };
+
+      var fakeAppData = FakeResponses.getApp(options);
+      stubAjax(fakeAppData);
+      var fakePostSessionData = FakeResponses.postSession(options);
+      stubAjax(fakePostSessionData);
+      var fakeGetSessionData = FakeResponses.getSession(options);
+      stubAjax(fakeGetSessionData);
+
+      MM.start({
+        appid: options.appid,
+        token: options.token,
+        userid: options.userid
+      }, function onSuccess () {
+        expect(MM.token).toEqual(options.token);
+        expect(MM.activeUserID).toEqual(options.userid);
+        expect(MM.activeSessionID).toEqual(options.sessionid);
+        done();
+      }, function onFail (err) {
+        console.error('Got error', err);
+        fail('Should not have an error');
+      });
+    });
+
+    it ('with session should set data', function (done) {
+      var options = {
+        userid: '1257',
+        name: 'aladdin2',
+        sessionid: '83a34231',
+        sessionname: 'A time for all things',
+        privacymode: 'inviteonly',
+        token: 'AEF12FFFF18b859c5f682c7406e'
+      };
+      var APP_ID = 'ASDFG';
+
+      var fakeTokenData = FakeResponses.getToken(options);
+      stubAjax(fakeTokenData);
+      var fakeUserData = FakeResponses.getUser(options);
+      stubAjax(fakeUserData);
+      var fakePostSessionData = FakeResponses.postSession(options);
+      stubAjax(fakePostSessionData);
+      var fakeGetSessionData = FakeResponses.getSession(options);
+      stubAjax(fakeGetSessionData);
+
+      MM.start({
+        appid: APP_ID,
+        session: {
+          name: options.sessionname,
+          privacymode: options.privacymode
+        }
+      }, function onSuccess () {
+        expect(MM.token).toEqual(options.token);
+        expect(MM.activeUserID).toEqual(options.userid);
+        expect(MM.activeSessionID).toEqual(options.sessionid);
+        done();
+      }, function onFail (err) {
+        console.error('Got error', err);
+        fail('Should not have an error');
+      });
+    });
+  });
 });

@@ -488,12 +488,12 @@ MM.voiceNavigator.showModal = function(options) {
 
                 // Pass token, user ID, and session ID if they are set already
                 if (typeof MM.token !== 'undefined' &&
-                    typeof MM.activeUserId !== 'undefined' && MM.activeUserId !== null &&
-                    typeof MM.activeSessionId !== 'undefined' && MM.activeSessionId !== null) {
+                    typeof MM.activeUserID !== 'undefined' && MM.activeUserID !== null &&
+                    typeof MM.activeSessionID !== 'undefined' && MM.activeSessionID !== null) {
                     MM.voiceNavigator.config.mmCredentials = {
                         token: MM.token,
-                        userID: MM.activeUserId,
-                        sessionID: MM.activeSessionId
+                        userID: MM.activeUserID,
+                        sessionID: MM.activeSessionID
                     };
                 }
                 // If defined, pass a starting query

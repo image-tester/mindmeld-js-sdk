@@ -1,4 +1,4 @@
-/* jshint node: true */
+/* jshint node: true, browser: false */
 
 var gulp = require('gulp');
 var taskListing = require('gulp-task-listing');
@@ -31,6 +31,36 @@ gulp.task('buildVoiceNavigator', ['vn.build']);
 
 // --------------------------------------------------------------------- //
 
+// -------------------------- Microphone Widget -------------------------- //
+require('./gulp/tasks/microphone');
+
+gulp.task('buildMicrophone', ['mic.build']);
+
+// --------------------------------------------------------------------- //
+
+// -------------------------- Search Input Widget -------------------------- //
+require('./gulp/tasks/searchInput');
+
+gulp.task('buildSearchInput', ['searchInput.build']);
+
+// --------------------------------------------------------------------- //
+
+
+// -------------------------- Cards Widget -------------------------- //
+require('./gulp/tasks/cardsWidget');
+
+gulp.task('buildCards', ['cards.build']);
+
+// --------------------------------------------------------------------- //
+
+// -------------------------- Build Examples -------------------------- //
+require('./gulp/tasks/examples');
+
+gulp.task('buildExamples', ['examples.build']);
+
+// --------------------------------------------------------------------- //
+
+
 // ------------------------------ Tests -------------------------------- //
 require('./gulp/tasks/tests');
 
@@ -38,22 +68,35 @@ require('./gulp/tasks/tests');
 
 
 // General Tasks
-gulp.task('archive', ['sdk.archive', 'docs', 'sw.build', 'vn.build']);
-gulp.task('build', ['sdk.build', 'sw.build', 'vn.build', 'tests.build']);
+gulp.task('archive', ['sdk.archive', 'docs', 'build']);
+gulp.task('build', [
+  'sdk.build',
+  'sw.build',
+  'vn.build',
+  'mic.build',
+  'cards.build',
+  'searchInput.build',
+  'examples.build',
+  'tests.build']);
 
 gulp.task('docs', function () {
   // We do it this slightly hacky way, because you need to jsdoc all the files at once,
   // otherwise index.html keeps getting overwritten.
-  var docPaths = ['src/sdk/main.js', 'README.md', 'src/widgets/voiceNavigator/js/widget.js'];
+  var docPaths = [
+      'src/sdk/main.js',
+      'src/sdk/listener.js',
+      'README.md',
+      'src/widgets/voiceNavigator/js/widget.js'
+  ];
   var jsdocCmd = './node_modules/.bin/jsdoc --destination dist/docs/' +
     ' --template src/docsTemplate/jaguarjs-doc/' +
     ' --configure src/docsTemplate/jaguar.conf.json' +
     ' ' + docPaths.join(' ');
 
-  gulp.src('')
-    .pipe(shell(jsdocCmd));
   gulp.src('README.md')
     .pipe(gulp.dest('dist/'));
+  return gulp.src('')
+    .pipe(shell(jsdocCmd));
 });
 
 gulp.task('default', ['build', 'docs']);

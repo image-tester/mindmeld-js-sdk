@@ -1,3 +1,4 @@
+/* global require, phantom */
 var system = require('system');
 
 /**
@@ -33,7 +34,7 @@ function waitFor(testFx, onReady, timeOutMillis) {
         }
       }
     }, 100); //< repeat check every 100ms
-};
+}
 
 
 if (system.args.length !== 2) {
@@ -46,6 +47,14 @@ var page = require('webpage').create();
 // Route "console.log()" calls from within the Page context to the main Phantom context (i.e. current "this")
 page.onConsoleMessage = function(msg) {
   console.log(msg);
+};
+
+page.onError = function (msg, trace) {
+    console.log(msg);
+    trace.forEach(function(item) {
+        console.log('  ', item.file, ':', item.line);
+    });
+    phantom.exit(1);
 };
 
 page.open(system.args[1], function(status){
@@ -62,6 +71,7 @@ page.open(system.args[1], function(status){
       var exitCode = page.evaluate(function(){
         console.log('');
 
+        var desc, msg;
         var el = document.body.querySelector('.banner');
         var banner = el.querySelector('.title').innerText + " " +
           el.querySelector('.version').innerText + " " +
@@ -72,10 +82,10 @@ page.open(system.args[1], function(status){
         if (list && list.length > 0) {
           console.log('');
           console.log(list.length + ' test(s) FAILED:');
-          for (i = 0; i < list.length; ++i) {
-            var el = list[i],
-              desc = el.querySelector('.description'),
-              msg = el.querySelector('.messages > .result-message');
+          for (var i = 0; i < list.length; ++i) {
+            el = list[i],
+            desc = el.querySelector('.description'),
+            msg = el.querySelector('.messages > .result-message');
             console.log('');
             console.log(desc.innerText);
             console.log(msg.innerText);
